@@ -41,10 +41,10 @@ conection = sqlite3.connect('prices.db')
 cursor = conection.cursor()
 
 # Ejecuta la instruccion de SQL en forma de texto y crea la tabla con sus filas
-cursor.execute('CREATE TABLE IF NOT EXISTS products (id INTEGER PRIMARY KEY, name TEXT, url TEXT)')
+cursor.execute('CREATE TABLE IF NOT EXISTS products (id INTEGER PRIMARY KEY, name TEXT, url TEXT UNIQUE)')
 
 # Se insetan los datos en las columnas de la tabla
-cursor.execute("INSERT INTO products (name, url) VALUES (?, ?)", (name, url))
+cursor.execute("INSERT OR IGNORE INTO products (name, url) VALUES (?, ?)", (name, url))
 
 # Selecciona todo de la tabla products
 cursor.execute("SELECT * FROM products")
