@@ -22,20 +22,44 @@ gross_price = element.text
 price       = gross_price.strip().split(" ")
 
 # Mostrar el precio limpio en consola
-print(price[0])
+
+# print(price[0])
 
 
 soup_name    = BeautifulSoup(html, 'html.parser')
 element_name = soup_name.find('h1', class_="js-main-title")
 name         = element_name.text
 
-print(name)
+# print(name)
 
 # ----------- DATA BASE ----------
 
-# conection = sqlite3.connect('prices.db')
+# Abrimos la conexion a la base de datos que crea un archivo .db
+conection = sqlite3.connect('prices.db')
 
-# cursor = conection.cursor()
+# Cursor se encarga de ser intermediario entre la conexion para poder escribir las queries
+cursor = conection.cursor()
 
-# cursor.execute('CREATE TABLE IF NOT EXISTS products (id INTEGER PRIMARY KEY, name TEXT, url TEXT)')
+# Ejecuta la instruccion de SQL en forma de texto y crea la tabla con sus filas
+cursor.execute('CREATE TABLE IF NOT EXISTS products (id INTEGER PRIMARY KEY, name TEXT, url TEXT)')
+
+# Se insetan los datos en las columnas de la tabla
+cursor.execute("INSERT INTO products (name, url) VALUES (?, ?)", (name, url))
+
+# Selecciona todo de la tabla products
+cursor.execute("SELECT * FROM products")
+
+# Muestra una sola fila como tupla
+fila = cursor.fetchone()
+
+print(f"Esta es la info solicitada: {fila}")
+
+# Crea tabla de precios historicos
+cursor.execute('CREATE TABLE IF NOT EXISTS price_history (id INTEGER PRIMARY KEY, product_id INTEGER, price REAL, date TEXT DEFAULT CURRENT_TIMESTAMP, FOREIGN KEY (product_id) REFERENCES products(id))')
+
+# Confirma las instrucciones
+conection.commit()
+
+# Cierra la conexion
+conection.close()
 
