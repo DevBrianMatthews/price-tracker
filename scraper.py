@@ -25,8 +25,7 @@ price       = price.replace("$", "").replace(".", "")
 price       = float(price)
 
 # Traer el Nombre del producto
-soup_name    = BeautifulSoup(html, 'html.parser')
-element_name = soup_name.find('h1', class_="js-main-title")
+element_name = soup.find('h1', class_="js-main-title")
 name         = element_name.text
 
 # print(name)
@@ -49,16 +48,24 @@ cursor.execute('INSERT OR IGNORE INTO products (name, url) VALUES (?, ?)', (name
 cursor.execute("SELECT id FROM products WHERE url = ?", (url,)) # IMPORTANTE la coma (,) para que se sepa que es una Tupla y no una variable.
 product_id = cursor.fetchone()[0] # Muestra en una sola linea el primer elemento de la tubla
 
-# Selecciona todo de la tabla products
-cursor.execute('SELECT * FROM products')
-
-# Muestra una sola fila como tupla
-fila = cursor.fetchone()
-
-print(f'Esta es la info solicitada: {fila}')
-
 # Crea tabla de precios historicos
 cursor.execute('CREATE TABLE IF NOT EXISTS price_history (id INTEGER PRIMARY KEY, product_id INTEGER, price REAL, date TEXT DEFAULT CURRENT_TIMESTAMP, FOREIGN KEY (product_id) REFERENCES products(id))')
+
+
+# Traer el precio anterior y el nuevo precio
+# ...
+cursor.execute(
+    "SELECT price FROM price_history WHERE product_id = ? ORDER BY date DESC LIMIT 1",
+    (product_id,)
+)
+
+last_price = cursor.fetchone()
+
+# Comparar si el precio anterior y el nuevo cambio
+if last_price is None:
+    print(f'Aun no hay precios a comparar, el precio actual es: {price}')
+elif price < last_price[0]:
+    print(f'El precio disminuyó, ahora es: {price}')
 
 
 # Agregar producto y precio a la tabla de histórico.
