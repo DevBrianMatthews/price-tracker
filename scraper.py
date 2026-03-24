@@ -3,7 +3,25 @@
 import requests # Descarga el HTML
 from bs4 import BeautifulSoup # Limpia el HTML
 
-import sqlite3
+import sqlite3 # La base de datos
+
+from dotenv import load_dotenv # Lee el archivo .evn y trae las variables
+import os
+
+import asyncio # Importa el async away
+from telegram import Bot # Bot Importamos el Bot de Telegram
+
+load_dotenv()
+
+token   = os.getenv("TELEGRAM_TOKEN") # Traemos el Token
+chat_id = os.getenv("TELEGRAM_CHAT_ID") # Traemos el Chat ID
+
+
+# Creamos una función asincrona que reciba las variables y envie el mensaje
+async def send_notification(token, chat_id, message):
+    bot = Bot(token=token)
+    await bot.send_message(chat_id=chat_id, text=message)
+
 
 
 # URL del sitio a busar el precio
@@ -52,11 +70,11 @@ product_id = cursor.fetchone()[0] # Muestra en una sola linea el primer elemento
 cursor.execute('CREATE TABLE IF NOT EXISTS price_history (id INTEGER PRIMARY KEY, product_id INTEGER, price REAL, date TEXT DEFAULT CURRENT_TIMESTAMP, FOREIGN KEY (product_id) REFERENCES products(id))')
 
 # SOLO PRUEBA SI FUNCIONA LA COMPARACION
-# cursor.execute(
-#     "INSERT INTO price_history (product_id, price) VALUES (?, ?)",
-#     (product_id, 7999999.0)
-# )
-# conection.commit()
+cursor.execute(
+    "INSERT INTO price_history (product_id, price) VALUES (?, ?)",
+    (product_id, 99999999.0)
+)
+conection.commit()
 #- ------------------------------------------------------------
 
 
@@ -73,7 +91,8 @@ last_price = cursor.fetchone()
 if last_price is None:
     print(f'Aun no hay precios a comparar, el precio actual es: {price}')
 elif price < last_price[0]:
-    print(f'El precio disminuyó, ahora es: {price}')
+    message = f"El precio de {name} bajó, ahora está en: ${price:,.0f}\n{url}" # :,.0f formatea el número con separadores de miles y sin decimales
+    asyncio.run(send_notification(token, chat_id, message))
 
 
 # Agregar producto y precio a la tabla de histórico.
