@@ -51,6 +51,14 @@ product_id = cursor.fetchone()[0] # Muestra en una sola linea el primer elemento
 # Crea tabla de precios historicos
 cursor.execute('CREATE TABLE IF NOT EXISTS price_history (id INTEGER PRIMARY KEY, product_id INTEGER, price REAL, date TEXT DEFAULT CURRENT_TIMESTAMP, FOREIGN KEY (product_id) REFERENCES products(id))')
 
+# SOLO PRUEBA SI FUNCIONA LA COMPARACION
+# cursor.execute(
+#     "INSERT INTO price_history (product_id, price) VALUES (?, ?)",
+#     (product_id, 7999999.0)
+# )
+# conection.commit()
+#- ------------------------------------------------------------
+
 
 # Traer el precio anterior y el nuevo precio
 # ...
