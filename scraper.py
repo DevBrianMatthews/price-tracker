@@ -1,7 +1,7 @@
-
 # Archivo de código de prueba
-import requests
-from bs4 import BeautifulSoup
+
+import requests # Descarga el HTML
+from bs4 import BeautifulSoup # Limpia el HTML
 
 import sqlite3
 
@@ -17,15 +17,14 @@ html    = request.text
 soup    = BeautifulSoup(html, 'html.parser')
 element = soup.find('span', id="js-original_price")
 
+
 # Traer el precio y limpiarlo
 gross_price = element.text
-price       = gross_price.strip().split(" ")
+price       = gross_price.strip().split(" ")[0]
+price       = price.replace("$", "").replace(".", "")
+price       = float(price)
 
-# Mostrar el precio limpio en consola
-
-# print(price[0])
-
-
+# Traer el Nombre del producto
 soup_name    = BeautifulSoup(html, 'html.parser')
 element_name = soup_name.find('h1', class_="js-main-title")
 name         = element_name.text
@@ -44,18 +43,30 @@ cursor = conection.cursor()
 cursor.execute('CREATE TABLE IF NOT EXISTS products (id INTEGER PRIMARY KEY, name TEXT, url TEXT UNIQUE)')
 
 # Se insetan los datos en las columnas de la tabla
-cursor.execute("INSERT OR IGNORE INTO products (name, url) VALUES (?, ?)", (name, url))
+cursor.execute('INSERT OR IGNORE INTO products (name, url) VALUES (?, ?)', (name, url))
+
+#Selecciona el product_id
+cursor.execute("SELECT id FROM products WHERE url = ?", (url,)) # IMPORTANTE la coma (,) para que se sepa que es una Tupla y no una variable.
+product_id = cursor.fetchone()[0] # Muestra en una sola linea el primer elemento de la tubla
 
 # Selecciona todo de la tabla products
-cursor.execute("SELECT * FROM products")
+cursor.execute('SELECT * FROM products')
 
 # Muestra una sola fila como tupla
 fila = cursor.fetchone()
 
-print(f"Esta es la info solicitada: {fila}")
+print(f'Esta es la info solicitada: {fila}')
 
 # Crea tabla de precios historicos
 cursor.execute('CREATE TABLE IF NOT EXISTS price_history (id INTEGER PRIMARY KEY, product_id INTEGER, price REAL, date TEXT DEFAULT CURRENT_TIMESTAMP, FOREIGN KEY (product_id) REFERENCES products(id))')
+
+
+# Agregar producto y precio a la tabla de histórico.
+cursor.execute(
+    "INSERT INTO price_history (product_id, price) VALUES (?, ?)",
+    (product_id, price)
+)
+
 
 # Confirma las instrucciones
 conection.commit()
