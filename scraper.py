@@ -29,7 +29,7 @@ url = 'https://www.alkosto.com/macbook-pro-14-pulgadas-chip-m5-cpu-10-nucleos-gp
 
 # Traer el HTML completo del sitio web
 request = requests.get(url)
-html    = request.text
+html    = request.text # → Pasamos la URL a texto
 
 # Buscar dentro de ese HTML la etiqueta donde está el precio
 soup    = BeautifulSoup(html, 'html.parser')
@@ -70,11 +70,11 @@ product_id = cursor.fetchone()[0] # Muestra en una sola linea el primer elemento
 cursor.execute('CREATE TABLE IF NOT EXISTS price_history (id INTEGER PRIMARY KEY, product_id INTEGER, price REAL, date TEXT DEFAULT CURRENT_TIMESTAMP, FOREIGN KEY (product_id) REFERENCES products(id))')
 
 # SOLO PRUEBA SI FUNCIONA LA COMPARACION
-cursor.execute(
-    "INSERT INTO price_history (product_id, price) VALUES (?, ?)",
-    (product_id, 99999999.0)
-)
-conection.commit()
+# cursor.execute(
+#     "INSERT INTO price_history (product_id, price) VALUES (?, ?)",
+#     (product_id, 99999999.0)
+# )
+# conection.commit()
 #- ------------------------------------------------------------
 
 
@@ -100,7 +100,6 @@ cursor.execute(
     "INSERT INTO price_history (product_id, price) VALUES (?, ?)",
     (product_id, price)
 )
-
 
 # Confirma las instrucciones
 conection.commit()
