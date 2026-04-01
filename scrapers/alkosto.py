@@ -13,7 +13,7 @@ class AlkostoScraper(BaseScraper):
         return price
 
     def get_name(self, html):
-        soup    = BeautifulSoup(html, 'html.parser')
+        soup         = BeautifulSoup(html, 'html.parser')
         element_name = soup.find('h1', class_="js-main-title")
         name         = element_name.text
         return name
