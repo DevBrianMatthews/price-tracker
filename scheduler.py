@@ -3,10 +3,12 @@ from notifiers.telegram_notifier import send_notification
 from scrapers.alkosto import AlkostoScraper
 import asyncio
 
+from apscheduler.schedulers.blocking import BlockingScheduler
+
 url = 'https://www.alkosto.com/macbook-pro-14-pulgadas-chip-m5-cpu-10-nucleos-gpu-10/p/195950488876?algEvent=eyJvYmplY3RJZCI6IjE5NTk1MDQ4ODg3NiIsImluZGV4IjoiYWxrb3N0b0luZGV4QWxnb2xpYVBSRCIsImFjdGlvbiI6InZpZXciLCJxdWVyeUlEIjoiOTU0MzhkYzUyMTUzZWUwOTk5MzljMGUxMTQ3NzdlNzQifQ=='
 
 def check_prices():
-    # Base de datos
+    # Database
     conection, cursor = get_connection('prices.db')
     create_tables(cursor)
 
@@ -16,11 +18,11 @@ def check_prices():
     price   = scraper.get_price(html)
     name    = scraper.get_name(html)
 
-    # Guardar producto y obtener su id
+    # Save the product and retrieve its ID
     insert_product(cursor, name, url)
     product_id = get_product_id(cursor, url)
 
-    # Comparar precios
+    # Compare prices
     last_price = get_last_price(cursor, product_id)
 
     if last_price is None:
@@ -29,10 +31,11 @@ def check_prices():
         message = f'El precio de {name} bajó, ahora está en: ${price:,.0f}\n{url}'
         asyncio.run(send_notification(message))
 
-    # Siempre guardar el precio actual
+    # Always save the current price
     insert_price(cursor, product_id, price)
     conection.commit()
     conection.close()
 
-
-check_prices()
+scheduler = BlockingScheduler()
+scheduler.add_job(check_prices, 'interval', seconds=10)
+scheduler.start()
